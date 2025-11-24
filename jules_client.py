@@ -32,6 +32,26 @@ class JulesClient:
         response.raise_for_status()
         return response.json()
 
+    def list_sources(self):
+        """Lists all sources."""
+        url = self._get_url("v1alpha/sources")
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+        return response.json().get("sources", [])
+
+    def create_session(self, source_name, prompt):
+        """Creates a new session."""
+        url = self._get_url("v1alpha/sessions")
+        payload = {
+            "prompt": prompt,
+            "sourceContext": {
+                "source": source_name
+            }
+        }
+        response = requests.post(url, headers=self.headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+
     def list_activities(self, session_name):
         """Lists activities for a session."""
         url = self._get_url(f"v1alpha/{session_name}/activities")

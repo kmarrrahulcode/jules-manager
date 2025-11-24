@@ -2,6 +2,7 @@ import streamlit as st
 import os
 from jules_client import JulesClient
 import time
+import json
 
 st.set_page_config(page_title="Jules Session Manager", layout="wide", page_icon="🤖")
 
@@ -38,6 +39,38 @@ def format_status(state):
         "COMPLETED": "Completed"
     }
     return mapping.get(state, state)
+
+def get_next_branch_number():
+    """Reads and increments a branch counter from a local file."""
+    counter_file = ".branch_counter"
+    try:
+        if os.path.exists(counter_file):
+            with open(counter_file, "r") as f:
+                content = f.read().strip()
+                if content:
+                    count = int(content)
+                else:
+                    count = 0
+        else:
+            count = 0
+
+        next_count = count + 1
+        with open(counter_file, "w") as f:
+            f.write(str(next_count))
+        return next_count
+    except Exception as e:
+        print(f"Error managing branch counter: {e}")
+        return int(time.time()) # Fallback to timestamp if file fails
+
+def check_review_status(client, session):
+    """Checks if a session appears to be waiting for review."""
+    state = session.get("state")
+    if state == "AWAITING_USER_FEEDBACK":
+        return True
+
+    # Optional: Check recent activities for keywords if state is ambiguous
+    # For now, relying on explicit state is safer and cleaner.
+    return False
 
 def render_activity(activity):
     """Renders a single activity item."""
@@ -94,25 +127,40 @@ def main():
     if not client:
         return
 
+    # --- Dashboard / Global Status ---
+    try:
+        sessions = client.list_sessions()
+    except Exception as e:
+        st.error(f"Failed to list sessions: {e}")
+        sessions = []
+
+    review_needed_sessions = [s for s in sessions if check_review_status(client, s)]
+
+    if review_needed_sessions:
+        st.warning(f"⚠️ **{len(review_needed_sessions)} Session(s) need your attention (Code Review / Feedback).**")
+        for s in review_needed_sessions:
+            with st.expander(f"Review: {s.get('title', 'Untitled')} ({s.get('name')})"):
+                st.write("This session is waiting for feedback.")
+                if st.button(f"Publish Feature Branch for {s.get('name').split('/')[-1]}", key=f"pub_{s.get('name')}"):
+                     branch_num = get_next_branch_number()
+                     branch_name = f"feature/change{branch_num}"
+                     msg = f"Please publish the changes to a new branch named {branch_name} and create a PR."
+                     try:
+                        client.send_message(s.get("name"), msg)
+                        st.success(f"Requested publication to {branch_name}!")
+                     except Exception as e:
+                        st.error(f"Failed: {e}")
+
     tab1, tab2 = st.tabs(["Sessions", "Sources"])
 
     # --- Sessions Tab ---
     with tab1:
         st.header("Sessions")
-        try:
-            sessions = client.list_sessions()
-        except Exception as e:
-            st.error(f"Failed to list sessions: {e}")
-            sessions = []
 
         if not sessions:
             st.info("No active sessions found.")
         else:
-            # Create a selection box for sessions
-            # Sort by createTime descending if possible, or just list
             session_options = {s.get("name"): s for s in sessions}
-            # Use a selectbox in the main area or sidebar. Let's use sidebar for navigation if we want,
-            # but since we have tabs, let's put it in the main area or a column.
 
             selected_session_name = st.selectbox(
                 "Select a Session",
@@ -200,10 +248,14 @@ def display_session_details(client, session_data):
                 st.error(f"Failed: {e}")
 
     with act_col2:
-        if st.button("Request PR Publication"):
+        # Renamed/Updated to specific Publish Feature Branch
+        if st.button("Publish Feature Branch"):
+             branch_num = get_next_branch_number()
+             branch_name = f"feature/change{branch_num}"
+             msg = f"Please publish the changes to a new branch named {branch_name} and create a PR."
              try:
-                client.send_message(session_name, "Please publish the PR.")
-                st.success("Requested PR publication.")
+                client.send_message(session_name, msg)
+                st.success(f"Requested publication to {branch_name}.")
              except Exception as e:
                 st.error(f"Failed: {e}")
 
@@ -237,14 +289,6 @@ def display_session_details(client, session_data):
     # Load and Render Activities
     try:
         activities = client.list_activities(session_name)
-        # Reverse order? Usually APIs return newest first or oldest first.
-        # Chat interface usually expects oldest at top.
-        # Assuming list_activities returns chronological order (oldest first) or reverse.
-        # Often APIs return newest first. If so, we might want to reverse it for chat view.
-        # Let's assume default order is chronological for now, or check timestamps if needed.
-        # If it looks backwards, we can flip it.
-
-        # Rendering activities
         for activity in activities:
             render_activity(activity)
 

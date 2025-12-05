@@ -16,7 +16,7 @@ object JulesClient {
         val authInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("X-Goog-Api-Key", key)
-                .addHeader("Content-Type", "application/json")
+                // Content-Type is added automatically by Retrofit/Gson
                 .build()
             chain.proceed(request)
         }

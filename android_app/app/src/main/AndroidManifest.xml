@@ -24,7 +24,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".DashboardActivity" />
         <activity android:name=".SessionListActivity" />
+        <activity android:name=".CodebaseDetailActivity" />
         <activity android:name=".ChatActivity"
                   android:windowSoftInputMode="adjustResize"/>
 

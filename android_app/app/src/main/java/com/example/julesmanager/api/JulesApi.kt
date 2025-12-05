@@ -9,6 +9,12 @@ interface JulesApi {
     @GET("v1alpha/sessions")
     suspend fun listSessions(): SessionListResponse
 
+    @GET("v1alpha/sources")
+    suspend fun listSources(): SourceListResponse
+
+    @POST("v1alpha/sessions")
+    suspend fun createSession(@Body body: CreateSessionRequest): Session
+
     @GET("v1alpha/{session_name}")
     suspend fun getSession(@Path("session_name", encoded = true) sessionName: String): Session
 
@@ -19,5 +25,11 @@ interface JulesApi {
     suspend fun sendMessage(
         @Path("session_name", encoded = true) sessionName: String,
         @Body body: SendMessageRequest
-    ): Any // Response format varies, ignoring for now or map to Map<String, Any>
+    ): Any
+
+    @POST("v1alpha/{session_name}:approvePlan")
+    suspend fun approvePlan(
+        @Path("session_name", encoded = true) sessionName: String,
+        @Body body: Map<String, String> = emptyMap()
+    ): Any
 }

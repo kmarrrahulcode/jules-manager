@@ -21,7 +21,7 @@ class LoginActivity : AppCompatActivity() {
         val savedKey = prefs.getString("api_key", null)
         if (!savedKey.isNullOrEmpty()) {
             JulesClient.init(savedKey)
-            startActivity(Intent(this, SessionListActivity::class.java))
+            startActivity(Intent(this, DashboardActivity::class.java))
             finish()
             return
         }
@@ -31,7 +31,7 @@ class LoginActivity : AppCompatActivity() {
             if (key.isNotEmpty()) {
                 JulesClient.init(key)
                 prefs.edit().putString("api_key", key).apply()
-                startActivity(Intent(this, SessionListActivity::class.java))
+                startActivity(Intent(this, DashboardActivity::class.java))
                 finish()
             } else {
                 Toast.makeText(this, "Please enter API Key", Toast.LENGTH_SHORT).show()

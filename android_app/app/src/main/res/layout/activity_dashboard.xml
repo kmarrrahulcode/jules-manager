@@ -21,7 +21,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+        app:tabTextColor="#B3FFFFFF"
+        app:tabSelectedTextColor="#FFFFFF"
+        app:tabIndicatorColor="#FFFFFF"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"

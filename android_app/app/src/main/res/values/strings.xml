@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Jules Manager</string>
+    <string name="api_key_hint">Enter Jules API Key</string>
+    <string name="login_button">Login</string>
+    <string name="sessions_title">Sessions</string>
+    <string name="no_sessions">No sessions found</string>
+    <string name="refresh">Refresh</string>
+    <string name="send">Send</string>
+    <string name="publish_branch">Publish Feature Branch</string>
+    <string name="message_hint">Message Jules...</string>
+</resources>

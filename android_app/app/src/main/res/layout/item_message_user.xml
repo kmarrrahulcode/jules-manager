@@ -5,15 +5,32 @@
     android:gravity="end"
     android:padding="4dp">
 
-    <TextView
-        android:id="@+id/tvMessage"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:background="@drawable/bg_user_message"
         android:padding="12dp"
-        android:maxWidth="280dp"
-        android:text="User Message"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:maxWidth="280dp">
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User Message"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvExpand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show More"
+            android:textColor="#3F51B5"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:paddingTop="8dp"
+            android:visibility="gone"/>
+    </LinearLayout>
 
 </LinearLayout>

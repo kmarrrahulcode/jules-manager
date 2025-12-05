@@ -70,8 +70,7 @@ data class CreateSessionRequest(
 )
 
 data class SourceContext(
-    val source: String,
-    val branch: String? = null // Optimistic addition based on user request
+    val source: String
 )
 
 data class SendMessageRequest(

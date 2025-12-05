@@ -106,12 +106,11 @@ class CodebaseDetailActivity : AppCompatActivity() {
         binding.swipeRefresh.isRefreshing = true
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // If user entered a branch, we pass it. The model now supports it.
-                // If API ignores it, no harm done.
-                val branchVal = if (branch.isNotEmpty()) branch else null
+                // Note: 'branch' field is currently removed from API model as it causes 400 errors.
+                // We ignore the branch input for now until the API supports it.
                 val request = CreateSessionRequest(
                     prompt = prompt,
-                    sourceContext = SourceContext(source = sourceName, branch = branchVal)
+                    sourceContext = SourceContext(source = sourceName)
                 )
                 val newSession = JulesClient.api?.createSession(request)
 

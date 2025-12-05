@@ -156,11 +156,15 @@ class ChatActivity : AppCompatActivity() {
     }
 }
 
-class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ChatAdapter : RecyclerView.Adapter<ChatAdapter.MessageHolder>() {
 
     private var list: List<ActivityItem> = emptyList()
+    // Map to store expansion state: position -> isExpanded
+    private val expansionState = mutableMapOf<Int, Boolean>()
+
     private val TYPE_USER = 1
     private val TYPE_AGENT = 2
+    private val MAX_CHARS = 500
 
     fun submitList(newList: List<ActivityItem>) {
         list = newList
@@ -171,32 +175,46 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         return if (list[position].userMessaged != null) TYPE_USER else TYPE_AGENT
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_USER) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message_user, parent, false)
-            UserHolder(view)
-        } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message_agent, parent, false)
-            AgentHolder(view)
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder {
+        val layoutId = if (viewType == TYPE_USER) R.layout.item_message_user else R.layout.item_message_agent
+        val view = LayoutInflater.from(parent.context).inflate(layoutId, parent, false)
+        return MessageHolder(view)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MessageHolder, position: Int) {
         val item = list[position]
-        if (holder is UserHolder) {
-            holder.text.text = item.userMessaged?.userMessage
-        } else if (holder is AgentHolder) {
-            holder.text.text = item.agentMessaged?.agentMessage
+        val rawText = if (getItemViewType(position) == TYPE_USER) {
+            item.userMessaged?.userMessage ?: ""
+        } else {
+            item.agentMessaged?.agentMessage ?: ""
+        }
+
+        val isExpanded = expansionState[position] == true
+
+        if (rawText.length > MAX_CHARS) {
+            holder.expandText.visibility = View.VISIBLE
+            if (isExpanded) {
+                holder.text.text = rawText
+                holder.expandText.text = "Show Less"
+            } else {
+                holder.text.text = rawText.take(MAX_CHARS) + "..."
+                holder.expandText.text = "Show More"
+            }
+
+            holder.expandText.setOnClickListener {
+                expansionState[position] = !isExpanded
+                notifyItemChanged(position)
+            }
+        } else {
+            holder.text.text = rawText
+            holder.expandText.visibility = View.GONE
         }
     }
 
     override fun getItemCount() = list.size
 
-    class UserHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class MessageHolder(view: View) : RecyclerView.ViewHolder(view) {
         val text: TextView = view.findViewById(R.id.tvMessage)
-    }
-
-    class AgentHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val text: TextView = view.findViewById(R.id.tvMessage)
+        val expandText: TextView = view.findViewById(R.id.tvExpand)
     }
 }
